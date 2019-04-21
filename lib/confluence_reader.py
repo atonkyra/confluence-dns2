@@ -153,7 +153,12 @@ class ConfluenceReader:
             rowdata = dict(zip(columns, rowcells))
             for key in rowdata:
                 if len(rowdata[key]) > 0:
-                    rowdata[key] = rowdata[key].split(' ')
+                    keystmp = rowdata[key].split(' ')
+                    rowdata[key] = []
+                    for keytmp in keystmp:
+                        keytmp = keytmp.strip()
+                        if len(keytmp) > 0:
+                            rowdata[key].append(keytmp)
                 else:
                     rowdata[key] = []
             entry_name = None
