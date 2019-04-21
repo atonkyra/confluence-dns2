@@ -1,0 +1,13 @@
+[confluence]
+url=https://confluence-url
+username=user-username
+password=user-password
+page_id=confluence-numeric-page-id
+
+[dnsupdate]
+plugin=knotcli
+
+[knotcli]
+protected_entries=list.domain.tld.,of.domain.tld.
+ttl=60
+debug=0
