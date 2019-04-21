@@ -21,7 +21,12 @@ def main():
         confluence_dns_dict, checksum = confluence_reader.fetch_dict(checksum)
         if confluence_dns_dict is not None:
             plugin = updater.PLUGINS[config['dnsupdate']['plugin']]
-            plugin.update_zone_from_dict(config['knotcli'], confluence_dns_dict)
+            logger.info('begin DNS update...')
+            all_ok = plugin.update_zone_from_dict(config['knotcli'], confluence_dns_dict)
+            if all_ok:
+                logger.info('completed DNS update')
+            else:
+                logger.warning('completed DNS update with errors')
         time.sleep(10)
 
 
