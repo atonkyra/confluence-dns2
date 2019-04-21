@@ -144,6 +144,8 @@ class ConfluenceReader:
                                 current_reverse6 = zone_dict[dns_reverse6]
                         except ValueError:
                             self._logger.error('failed to parse %s as 4 arguments', arguments)
+                        finally:
+                            break
                 else:
                     rowcells.append(rowcell_plaintext)
             if len(rowcells) == 0:

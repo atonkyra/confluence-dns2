@@ -32,7 +32,6 @@ def begin_zone_transaction(zone_name, debug):
         else:
             logger.info('opened zone %s transaction', zone_name)
             return True
-    return False
 
 
 def commit_zone_transaction(zone_name, debug):
