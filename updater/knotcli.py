@@ -79,6 +79,7 @@ def invalidate_stale_data(new_zones, previous_zones, protected_entries):
 
 def update_zone_from_dict(config, new_zones):
     previous_zones = load_cache(config)
+    store_cache(config, new_zones)
 
     protected_entries = []
     ttl = 60
@@ -94,6 +95,10 @@ def update_zone_from_dict(config, new_zones):
     invalidate_stale_data(new_zones, previous_zones, protected_entries)
     everything_ok = True
     for zone_name, zone_data in new_zones.items():
+        if previous_zones is not None:
+            if zone_name in previous_zones:
+                if previous_zones[zone_name] == zone_data:
+                    continue
         zone_ok = True
         transaction_open = begin_zone_transaction(zone_name, debug)
         if not transaction_open:
@@ -118,5 +123,4 @@ def update_zone_from_dict(config, new_zones):
             if not transaction_ok:
                 everything_ok = False
 
-    store_cache(config, new_zones)
     return everything_ok
