@@ -11,3 +11,4 @@ plugin=knotcli
 protected_entries=list.domain.tld.,of.domain.tld.
 ttl=60
 debug=0
+cache_file=confluence-dns2.knotcli-zonecache

@@ -1,6 +1,7 @@
 import time
 import subprocess
 import logging
+import json
 
 
 logger = logging.getLogger('knotcli')
@@ -44,8 +45,41 @@ def commit_zone_transaction(zone_name, debug):
     return True
 
 
+def load_cache(config):
+    if 'cache_file' not in config:
+        return None
+    try:
+        with open(config['cache_file'], 'r') as fp:
+            return json.loads(fp.read())
+    except FileNotFoundError:
+        return None
 
-def update_zone_from_dict(config, data):
+
+def store_cache(config, data):
+    if 'cache_file' not in config:
+        return
+    with open(config['cache_file'], 'w') as fp:
+        fp.write(json.dumps(data))
+
+
+def invalidate_stale_data(new_zones, previous_zones, protected_entries):
+    if previous_zones is None:
+        return
+    for old_zone_name, old_zone_data in previous_zones.items():
+        if old_zone_name not in new_zones:
+            continue
+        new_zone_data = new_zones[old_zone_name]
+        for old_zone_rrname in old_zone_data.keys():
+            if old_zone_rrname in protected_entries:
+                continue
+            if old_zone_rrname not in new_zone_data:
+                logger.info('marking stale entry %s for cleanup from zone %s', old_zone_rrname, old_zone_name)
+                new_zone_data[old_zone_rrname] = {}
+
+
+def update_zone_from_dict(config, new_zones):
+    previous_zones = load_cache(config)
+
     protected_entries = []
     ttl = 60
     if 'ttl' in config:
@@ -57,8 +91,9 @@ def update_zone_from_dict(config, data):
         protected_entries_tmp = config['protected_entries'].split(',')
         for item in protected_entries_tmp:
             protected_entries.append(item.strip())
+    invalidate_stale_data(new_zones, previous_zones, protected_entries)
     everything_ok = True
-    for zone_name, zone_data in data.items():
+    for zone_name, zone_data in new_zones.items():
         zone_ok = True
         transaction_open = begin_zone_transaction(zone_name, debug)
         if not transaction_open:
@@ -77,9 +112,11 @@ def update_zone_from_dict(config, data):
                         zone_ok = False
                         everything_ok = False
         if not zone_ok:
-            ret, outerr = knot_exec('zone-abort %s' % zone_name, debug)
+            _ret, _outerr = knot_exec('zone-abort %s' % zone_name, debug)
         else:
             transaction_ok = commit_zone_transaction(zone_name, debug)
             if not transaction_ok:
                 everything_ok = False
+
+    store_cache(config, new_zones)
     return everything_ok
