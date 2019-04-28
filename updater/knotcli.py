@@ -2,6 +2,7 @@ import time
 import subprocess
 import logging
 import json
+import copy
 
 
 logger = logging.getLogger('knotcli')
@@ -79,7 +80,7 @@ def invalidate_stale_data(new_zones, previous_zones, protected_entries):
 
 def update_zone_from_dict(config, new_zones):
     previous_zones = load_cache(config)
-    store_cache(config, new_zones)
+    new_zones_initial = copy.deepcopy(new_zones)
 
     protected_entries = []
     ttl = 60
@@ -122,5 +123,6 @@ def update_zone_from_dict(config, new_zones):
             transaction_ok = commit_zone_transaction(zone_name, debug)
             if not transaction_ok:
                 everything_ok = False
-
+    if everything_ok:
+        store_cache(config, new_zones_initial)
     return everything_ok
