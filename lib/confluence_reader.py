@@ -162,6 +162,8 @@ class ConfluenceReader:
                 else:
                     rowdata[key] = []
             entry_name = None
+            if len(rowdata['Name']) == 0:
+                continue
             if dns_subzone == '-':
                 entry_name = "%s.%s" % (rowdata['Name'][0], dns_zone)
             else:
