@@ -41,7 +41,11 @@ class ConfluenceReader:
                 first_td = table.find('td')
                 if first_td is None:
                     continue
-                hint = first_td.next_element.getText()
+                hint = None
+                try:
+                    hint = first_td.next_element.getText()
+                except AttributeError:
+                    continue
                 if hint == '#ConfluenceDNSTable':
                     return table
             except BaseException as be:
